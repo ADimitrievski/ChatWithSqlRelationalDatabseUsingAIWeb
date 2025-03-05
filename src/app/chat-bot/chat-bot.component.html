@@ -1,0 +1,48 @@
+<mat-toolbar color="primary">
+    <span>Use AI to chat with a relational SQL database with natural language!</span>
+</mat-toolbar>
+
+<div class="container">
+    <h1>Chat with me!</h1>
+
+    <mat-form-field appearance="fill">
+        <mat-label>Enter Text</mat-label>
+        <textarea matInput placeholder="Type here" [(ngModel)]="message" rows="4"></textarea>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="onSubmit()">Submit</button>
+</div>
+
+<div class="dataResult">
+    <div class="section">
+        <h3>Summary</h3>
+        <p>{{ aiResponse?.summary || 'No summary available' }}</p>
+    </div>
+
+    <div class="section">
+        <h3>Query</h3>
+        <p>{{ aiResponse?.query || 'No query available' }}</p>
+    </div>
+
+    <div class="section" *ngIf="aiResponse?.error">
+        <h2>Error</h2>
+        <p class="error">{{ aiResponse?.error }}</p>
+    </div>
+
+    <div class="section">
+        <h3>Data Table</h3>
+        <mat-table [dataSource]="dataSource" *ngIf="displayedColumns.length > 0; else noData">
+            <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
+                <mat-header-cell *matHeaderCellDef>{{ column }}</mat-header-cell>
+                <mat-cell *matCellDef="let row">{{ row[column] }}</mat-cell>
+            </ng-container>
+
+            <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+            <mat-row *matRowDef="let row; columns: displayedColumns;"></mat-row>
+        </mat-table>
+
+        <ng-template #noData>
+            <p>No data available</p>
+        </ng-template>
+    </div>
+</div>

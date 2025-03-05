@@ -1,0 +1,42 @@
+.container {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 500px;
+    margin: auto;
+    text-align: center;
+  }
+
+  .dataResult {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .input-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  .input-field {
+    flex-grow: 1;
+  }
+  
+  .section {
+    margin-bottom: 30px;
+  }
+  
+  mat-table {
+    width: 100%;
+    overflow-x: auto;
+  }
+  
+  mat-header-cell, mat-cell {
+    padding: 8px;
+  }
+  
+  .error {
+    color: red;
+  }
