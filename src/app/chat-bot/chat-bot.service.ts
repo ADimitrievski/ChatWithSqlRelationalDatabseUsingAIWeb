@@ -10,8 +10,10 @@ export class ChatBotService {
 
   constructor(private http: HttpClient) {}
 
-  getData(message: string): Observable<any> {
-    const params = new HttpParams().set('message', message); 
+  getData(message: string, userId: string): Observable<any> {
+    const params = new HttpParams()
+      .set('message', message)
+      .set('userId', userId); 
     return this.http.get<any>(this.apiUrl, { params });
   }
 }

@@ -6,6 +6,7 @@ import { MatTableModule } from '@angular/material/table';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ChatBotService } from './chat-bot.service';
+import { v4 as uuidv4 } from 'uuid';
 
 interface AIResponse {
   summary: string;
@@ -33,28 +34,32 @@ export class ChatBotComponent {
   aiResponse?: AIResponse;
   displayedColumns: string[] = [];
   dataSource: any[] = [];
+  userId: string = '';
 
   constructor(private chatBotService: ChatBotService) { }
 
+  ngOnInit() {
+    this.userId = uuidv4();
+  }
+
   onSubmit() {
-    this.chatBotService.getData(this.message).subscribe({
+    this.chatBotService.getData(this.message, this.userId).subscribe({
       next: (response: AIResponse) => {
         this.aiResponse = response;
+
+        if(!this.aiResponse?.rowData.length) return;
+
+        this.displayedColumns = this.aiResponse.rowData[0];
+        const rows = this.aiResponse.rowData.slice(1);
         
-        this.displayedColumns = [];
-        this.dataSource = [];
-
-        if (this.aiResponse?.rowData && Array.isArray(this.aiResponse.rowData) && this.aiResponse.rowData.length > 0) {
-          this.displayedColumns = this.aiResponse.rowData[0].map((col: any) => col.toString());
-
-          this.dataSource = this.aiResponse.rowData.slice(1).map((row: any[]) => {
-            const rowData: { [key: string]: any } = {};
-            this.displayedColumns.forEach((col, index) => {
-              rowData[col] = row[index] === null ? 'NULL' : row[index];
-            });
-            return rowData;
+        // Convert each row to object {columnName: value}
+        this.dataSource = rows.map(row => {
+          const obj: any = {};
+          this.displayedColumns.forEach((col, idx) => {
+            obj[col] = row[idx];
           });
-        }
+          return obj;
+        });
       },
       error: (err) => {
         console.error('Error fetching data:', err);
@@ -65,3 +70,4 @@ export class ChatBotComponent {
     });
   }
 }
+
