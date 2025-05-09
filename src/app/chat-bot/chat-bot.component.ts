@@ -7,6 +7,8 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ChatBotService } from './chat-bot.service';
 import { v4 as uuidv4 } from 'uuid';
+import { ViewChild } from '@angular/core';
+import { MatTable } from '@angular/material/table';
 
 interface AIResponse {
   summary: string;
@@ -30,6 +32,7 @@ interface AIResponse {
   styleUrl: './chat-bot.component.css'
 })
 export class ChatBotComponent {
+  @ViewChild(MatTable) table!: MatTable<any>;
   message: string = '';
   aiResponse?: AIResponse;
   displayedColumns: string[] = [];
@@ -53,13 +56,15 @@ export class ChatBotComponent {
         const rows = this.aiResponse.rowData.slice(1);
         
         // Convert each row to object {columnName: value}
-        this.dataSource = rows.map(row => {
+        const newData = rows.map(row => {
           const obj: any = {};
           this.displayedColumns.forEach((col, idx) => {
             obj[col] = row[idx];
           });
           return obj;
         });
+        this.dataSource = [...newData];
+        this.table?.renderRows();
       },
       error: (err) => {
         console.error('Error fetching data:', err);
