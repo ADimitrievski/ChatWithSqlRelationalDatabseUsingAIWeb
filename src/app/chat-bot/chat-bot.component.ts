@@ -1,14 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTableModule } from '@angular/material/table';
+import { MatTable, MatTableDataSource } from '@angular/material/table';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ChatBotService } from './chat-bot.service';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewChild } from '@angular/core';
-import { MatTable } from '@angular/material/table';
 
 interface AIResponse {
   summary: string;
@@ -26,20 +25,23 @@ interface AIResponse {
     MatButtonModule,
     MatToolbarModule,
     MatTableModule,
-    FormsModule
+    FormsModule,
   ],
   templateUrl: './chat-bot.component.html',
-  styleUrl: './chat-bot.component.css'
+  styleUrl: './chat-bot.component.css',
 })
 export class ChatBotComponent {
   @ViewChild(MatTable) table!: MatTable<any>;
   message: string = '';
   aiResponse?: AIResponse;
   displayedColumns: string[] = [];
-  dataSource: any[] = [];
+  dataSource = new MatTableDataSource<any>([]);
   userId: string = '';
 
-  constructor(private chatBotService: ChatBotService) { }
+  constructor(
+    private chatBotService: ChatBotService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit() {
     this.userId = uuidv4();
@@ -50,29 +52,40 @@ export class ChatBotComponent {
       next: (response: AIResponse) => {
         this.aiResponse = response;
 
-        if(!this.aiResponse?.rowData.length) return;
+        if (!this.aiResponse?.rowData.length) {
+          this.displayedColumns = [];
+          this.dataSource.data = [];
+          return;
+        }
 
         this.displayedColumns = this.aiResponse.rowData[0];
         const rows = this.aiResponse.rowData.slice(1);
-        
+
         // Convert each row to object {columnName: value}
-        const newData = rows.map(row => {
+        const newData = rows.map((row) => {
           const obj: any = {};
           this.displayedColumns.forEach((col, idx) => {
             obj[col] = row[idx];
           });
           return obj;
         });
-        this.dataSource = [...newData];
+        this.dataSource.data = newData;
+        this.cdr.detectChanges();
         this.table?.renderRows();
       },
       error: (err) => {
         console.error('Error fetching data:', err);
-        this.aiResponse = { summary: 'Error occurred', query: 'NA', rowData: [], error: err.message };
+        this.aiResponse = {
+          summary: 'Error occurred',
+          query: 'NA',
+          rowData: [],
+          error: err.message,
+        };
         this.displayedColumns = [];
-        this.dataSource = [];
-      }
+        this.dataSource.data = [];
+        this.cdr.detectChanges();
+        this.table?.renderRows();
+      },
     });
   }
 }
-
